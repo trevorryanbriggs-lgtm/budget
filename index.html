@@ -36,7 +36,25 @@
     <script>tailwind.config = { theme: { extend: { colors: { brand: { 50:'#eff6ff', 600:'#2563eb', 700:'#1d4ed8' } } } } }</script>
 </head>
 <body class="min-h-screen text-gray-800 pb-10 transition-colors duration-300" id="main-body">
-<div id="app" class="p-3 md:p-8">
+
+<!-- PASSWORD GATE -->
+<div id="password-gate" class="fixed inset-0 bg-gray-100 flex items-center justify-center z-[999] p-6">
+    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm text-center">
+        <div class="text-4xl mb-4">🔒</div>
+        <h1 class="text-2xl font-extrabold text-indigo-700 mb-1">Budget Tracker</h1>
+        <p class="text-sm text-gray-500 mb-6">Enter your password to continue</p>
+        <input type="password" id="password-input" placeholder="Password"
+            class="w-full p-3 border border-gray-300 rounded-lg text-center text-lg mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            onkeydown="if(event.key==='Enter') window.checkPassword()">
+        <button onclick="window.checkPassword()"
+            class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition">
+            Unlock
+        </button>
+        <p id="password-error" class="hidden mt-3 text-sm text-red-500 font-medium">Incorrect password</p>
+    </div>
+</div>
+
+<div id="app" class="hidden p-3 md:p-8">
 
     <!-- HEADER -->
     <header class="mb-4 max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 border-b border-gray-200 pb-4">
@@ -288,8 +306,34 @@
     // SUPABASE SYNC — paste your values from Supabase dashboard
     // ==============================================
     const SUPABASE_URL = 'https://ggxlkebhpncwbzpvtote.supabase.co';       // e.g. https://abcdefgh.supabase.co
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdneGxrZWJocG5jd2J6cHZ0b3RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxOTIzNjcsImV4cCI6MjA4ODc2ODM2N30.uj-OeAsu51cwCAfuZ7wNgrsf5l3QVnKH4rGrzLTB1aI';  // long string starting with eyJ...
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdneGxrZWJocG5jd2J6cHZ0b3RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxOTIzNjcsImV4cCI6MjA4ODc2ODM2N30.uj-OeAsu51cwCAfuZ7wNgrsf5l3QVnKH4rGrzLTB1aI'; // long string starting with eyJ...
     const SUPABASE_ROW_ID = 1;                       // always row 1 — single user
+
+    // ==============================================
+    // PASSWORD — change this to whatever you want
+    // ==============================================
+    const APP_PASSWORD = 'PGbF9ixdf.';
+
+    const checkPassword = () => {
+        const input = document.getElementById('password-input').value;
+        if (input === APP_PASSWORD) {
+            sessionStorage.setItem('budget_auth', '1');
+            document.getElementById('password-gate').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('password-input').value = '';
+        } else {
+            document.getElementById('password-error').classList.remove('hidden');
+            document.getElementById('password-input').value = '';
+            document.getElementById('password-input').focus();
+        }
+    };
+    window.checkPassword = checkPassword;
+
+    // Check if already authenticated this session
+    if (sessionStorage.getItem('budget_auth') === '1') {
+        document.getElementById('password-gate').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+    }
 
     let supabaseAvailable = SUPABASE_URL !== 'YOUR_SUPABASE_URL';
     let syncStatus = 'idle'; // idle | saving | saved | error
