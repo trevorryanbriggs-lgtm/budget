@@ -662,6 +662,7 @@
     const SUPABASE_ROW_ID = 1;
     const supabaseAvailable = !SUPABASE_URL.includes('YOUR_');
 
+
     const CATEGORIES_KEY = 'budget_tracker_categories_v15_mobile';
     const TRANSACTIONS_KEY = 'budget_tracker_transactions_v15_mobile';
     const AUTOCATEGORY_RULES_KEY = 'budget_tracker_autocategorization_rules_v15_mobile';
@@ -783,8 +784,9 @@
         setSyncStatus('saving');
         try {
             const payload = { categories, transactions, rules, lockedMonths, updated_at: new Date().toISOString() };
+        delete payload.id;
             const res = await fetch(`${SUPABASE_URL}/rest/v1/budget_data?id=eq.${SUPABASE_ROW_ID}`, {
-                method: 'PUT',
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Prefer': 'return=minimal' },
                 body: JSON.stringify(payload)
             });
