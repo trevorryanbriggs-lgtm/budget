@@ -1812,13 +1812,21 @@
             if (!fDate || isNaN(row.amount) || row.amount <= 0) { failed++; continue; }
             const monthKey = fDate.substring(0, 7);
             if (lockedMonths.includes(monthKey)) { lockedSkipped++; continue; }
-            const descNorm = row.description.trim().toLowerCase();
+            const descNorm = row.description.trim().toLowerCase().replace(/\s+/g,' ');
             const amtNorm = row.amount;
-            const exactDupe = transactions.find(t => t.date===fDate && Math.abs(t.amount-amtNorm)<0.01 && t.description.trim().toLowerCase()===descNorm);
+            // Tier 1: exact match — silent skip
+            const exactDupe = transactions.find(t =>
+                t.date === fDate &&
+                Math.abs(parseFloat(t.amount) - amtNorm) < 0.01 &&
+                t.description.trim().toLowerCase().replace(/\s+/g,' ') === descNorm
+            );
             if (exactDupe) { failed++; continue; }
+            // Tier 2: near match (1-5 days, same amount+desc) — show modal
             const nearDupe = transactions.find(t => {
                 const diff = Math.ceil(Math.abs(new Date(fDate)-new Date(t.date))/86400000);
-                return diff>=1&&diff<=5 && Math.abs(t.amount-amtNorm)<0.01 && t.description.trim().toLowerCase()===descNorm;
+                return diff>=1 && diff<=5 &&
+                    Math.abs(parseFloat(t.amount)-amtNorm)<0.01 &&
+                    t.description.trim().toLowerCase().replace(/\s+/g,' ')===descNorm;
             });
             const up = row.description.toUpperCase();
             const mr = rules.find(r => up.includes(r.keyword.toUpperCase()));
